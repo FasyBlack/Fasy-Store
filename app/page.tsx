@@ -17,13 +17,13 @@ const HERO_SLIDES = [
     id: 2,
     title: 'Smartwatch Series Pro',
     badge: 'Best Seller',
-    image: 'https://pngimg.com/uploads/smart_watch/smart_watch_PNG101445.png',
+    image: 'https://pngimg.com/uploads/laptop/laptop_PNG101764.png',
   },
   {
     id: 3,
     title: 'Pro Gaming Controller',
     badge: 'New Release',
-    image: 'https://pngimg.com/uploads/gamepad/gamepad_PNG132.png',
+    image: 'https://pngimg.com/uploads/apple_watch/apple_watch_PNG14.png',
   },
 ];
 

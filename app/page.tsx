@@ -1,11 +1,14 @@
+// app/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
+import { PRODUCTS, Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import Navbar from '@/components/Navbar';
+import ProductModal from '@/components/ProductModal';
 
-// Data item slider untuk Hero Banner
+// Data item slider untuk Hero Banner (PNG Transparent)
 const HERO_SLIDES = [
   {
     id: 1,
@@ -28,11 +31,14 @@ const HERO_SLIDES = [
 ];
 
 export default function Home() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { addToCart } = useCart();
-  const supabase = createClient();
+  
+  // State untuk kontrol Modal Produk
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+
 
   // Auto slide tiap 3 detik
   useEffect(() => {
@@ -42,18 +48,10 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      const { data, error } = await supabase.from('products').select('*');
-      if (error) {
-        console.error('Error fetching products:', error);
-      } else {
-        setProducts(data || []);
-      }
-      setLoading(false);
-    }
-    fetchProducts();
-  }, []);
+  const handleOpenModal = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-[#fbfbfd] text-slate-900 font-sans antialiased selection:bg-red-500 selection:text-white">
@@ -178,53 +176,59 @@ export default function Home() {
             <span className="text-xs text-red-600 hover:underline cursor-pointer font-semibold">Lihat Semua →</span>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="h-80 bg-slate-200 animate-pulse rounded-3xl" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="group relative bg-white border border-slate-200/80 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/60"
-                >
-                  <div>
-                    <div className="relative w-full h-48 mb-4 rounded-2xl overflow-hidden bg-slate-50 flex items-center justify-center p-2">
-                      <img
-                        src={product.image_url || 'https://via.placeholder.com/400'}
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <h3 className="text-base font-semibold text-slate-900 line-clamp-1 mb-1">{product.name}</h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 mb-4 leading-relaxed">
-                      {product.description || 'Spesifikasi tinggi dan performa handal.'}
-                    </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch">
+            {PRODUCTS.map((product) => (
+              <div
+                key={product.id}
+                onClick={() => handleOpenModal(product)}
+                className="group bg-white border border-slate-200/80 rounded-3xl p-5 flex flex-col justify-between h-full transition-all duration-300 hover:scale-[1.02] hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/60 cursor-pointer"
+              >
+                {/* Konten Atas */}
+                <div className="flex flex-col">
+                  {/* Gambar dengan sudut melengkung/rounded */}
+                  <div className="relative w-full h-48 mb-4 rounded-2xl overflow-hidden bg-slate-100 flex items-center justify-center">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
-                    <div>
-                      <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Harga</span>
-                      <span className="text-sm font-bold text-slate-900">
-                        Rp {product.price?.toLocaleString('id-ID')}
-                      </span>
-                    </div>
+                  {/* Judul Produk */}
+                  <h3 className="text-base font-semibold text-slate-900 line-clamp-1 mb-1 min-h-[1.5rem] group-hover:text-red-600 transition">
+                    {product.name}
+                  </h3>
 
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="bg-red-600 hover:bg-red-500 text-white font-medium px-4 py-2 rounded-full text-xs transition-all duration-200 active:scale-95 shadow-md shadow-red-500/20"
-                    >
-                      + Keranjang
-                    </button>
-                  </div>
+                  {/* Deskripsi Produk - Dibuat fixed height (h-9 / 2 baris) */}
+                  <p className="text-xs text-slate-500 line-clamp-2 h-9 mb-4 leading-relaxed">
+                    {product.description}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
+
+                {/* Konten Bawah (Harga & Button) - Menggunakan mt-auto agar selalu sejajar di bawah */}
+                <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Harga</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      Rp {product.price?.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenModal(product);
+                    }}
+                    className="bg-red-600 hover:bg-red-500 text-white font-medium px-4 py-2 rounded-full text-xs transition-all duration-200 active:scale-95 shadow-md shadow-red-500/20"
+                  >
+                    + Beli
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
+      
 
         {/* 4. VALUE PROPOSITION BAR */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white border border-slate-200/80 rounded-3xl p-6 text-center shadow-sm">
@@ -242,6 +246,11 @@ export default function Home() {
         </section>
 
       </main>
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

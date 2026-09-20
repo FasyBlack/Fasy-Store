@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product, ProductVariant } from '@/data/products';
 import { useCart } from '@/context/CartContext';
+import toast from 'react-hot-toast'; // Perbaikan import (huruf kecil)
 
 interface ProductModalProps {
   product: Product | null;
@@ -37,8 +38,9 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
   const totalPrice = currentPrice * quantity;
 
-  // Masukkan ke keranjang
+  // FUNGSI GABUNGAN: Logika Keranjang + Notifikasi Toast
   const handleAddToCart = () => {
+    // 1. Eksekusi fungsi addToCart asli
     addToCart({
       id: `${product.id}-${selectedVariant ? selectedVariant.id : 'default'}`,
       name: selectedVariant ? `${product.name} (${selectedVariant.name})` : product.name,
@@ -46,14 +48,37 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
       image: product.image,
       quantity: quantity,
     });
+
+    // 2. Munculkan notifikasi
+    toast.success('Berhasil ditambahkan ke keranjang!',{id: 'cart-add-success',});
+    
+    // 3. Tutup modal
     onClose();
   };
 
-  // Beli Langsung (Tambah ke keranjang & Lanjut ke Checkout)
   const handleBuyNow = () => {
-    handleAddToCart();
-    router.push('/checkout');
+    // 1. Buat object item yang sedang dilihat
+    const itemToBuy = {
+      id: `${product.id}-${selectedVariant ? selectedVariant.id : 'default'}`,
+      name: selectedVariant ? `${product.name} (${selectedVariant.name})` : product.name,
+      price: currentPrice,
+      image: product.image,
+      quantity: quantity,
+    };
+
+    // 2. Simpan HANYA item ini ke sessionStorage
+    sessionStorage.setItem('checkout_items', JSON.stringify([itemToBuy]));
+
+    // 3. Munculkan loading & pindah halaman
+    toast.loading('Memproses pesanan...', { duration: 1000 });
+    onClose();
+    setTimeout(() => {
+      router.push('/checkout');
+    }, 1000);
   };
+
+
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
@@ -132,7 +157,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
           </div>
         </div>
 
-        {/* Action Buttons ala Shopee */}
+        {/* Action Buttons */}
         <div className="pt-5 grid grid-cols-2 gap-3">
           <button
             onClick={handleAddToCart}

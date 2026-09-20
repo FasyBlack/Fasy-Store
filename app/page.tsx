@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import Navbar from '@/components/Navbar';
 import ProductModal from '@/components/ProductModal';
 
+
 // Data item slider untuk Hero Banner (PNG Transparent)
 const HERO_SLIDES = [
   {

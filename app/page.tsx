@@ -2,12 +2,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { PRODUCTS, Product } from '@/data/products';
-import { useCart } from '@/context/CartContext';
 import Navbar from '@/components/Navbar';
-import ProductModal from '@/components/ProductModal';
-
+import Catalog from '@/components/Catalog';
 
 // Data item slider untuk Hero Banner (PNG Transparent)
 const HERO_SLIDES = [
@@ -33,13 +29,6 @@ const HERO_SLIDES = [
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { addToCart } = useCart();
-  
-  // State untuk kontrol Modal Produk
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-
 
   // Auto slide tiap 3 detik
   useEffect(() => {
@@ -49,11 +38,6 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleOpenModal = (product: Product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  };
-
   return (
     <div className="min-h-screen bg-[#fbfbfd] text-slate-900 font-sans antialiased selection:bg-red-500 selection:text-white">
       <Navbar />
@@ -62,7 +46,6 @@ export default function Home() {
         
         {/* 1. HERO BANNER WITH AUTO SLIDER & ORNAMENTS */}
         <section className="relative overflow-hidden rounded-3xl bg-slate-100/80 border border-slate-200/80 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm">
-          
           {/* Teks & Akses Cepat */}
           <div className="space-y-4 max-w-xl text-left z-10">
             <span className="inline-block bg-red-100 text-red-600 border border-red-200 text-xs font-semibold px-3.5 py-1 rounded-full uppercase tracking-wider">
@@ -90,18 +73,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Card Hero Kanan: Card Slider + Animation + Ornamen */}
+          {/* Card Hero Kanan */}
           <div className="relative w-full md:w-1/2 h-72 md:h-96 flex items-center justify-center overflow-hidden rounded-[2.5rem] rounded-bl-[6rem]">
-            {/* Background Card Gradasi Merah Pudar */}
             <div className="absolute inset-0 bg-gradient-to-bl from-red-600 via-red-500/60 to-transparent shadow-lg" />
-            
-            {/* Ornamen 1: Ambient Glow Red Light */}
             <div className="absolute -bottom-6 -left-6 w-44 h-44 bg-red-400/30 rounded-full blur-3xl animate-pulse" />
-            
-            {/* Ornamen 2: Grid Dot Pattern Tipis */}
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
 
-            {/* Container Gambar Slider */}
             <div className="relative w-full h-full flex items-center justify-center p-6 z-10">
               {HERO_SLIDES.map((slide, index) => {
                 const isActive = index === currentSlide;
@@ -114,12 +91,9 @@ export default function Home() {
                         : 'opacity-0 translate-x-24 scale-95 pointer-events-none'
                     }`}
                   >
-                    {/* Floating Badge Ornamen */}
                     <div className="absolute top-6 right-6 bg-white/20 backdrop-blur-md border border-white/30 text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
                       {slide.badge}
                     </div>
-
-                    {/* Gambar Produk Transparent */}
                     <img
                       src={slide.image}
                       alt={slide.title}
@@ -130,7 +104,6 @@ export default function Home() {
               })}
             </div>
 
-            {/* Slider Indicator Dots */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
               {HERO_SLIDES.map((_, idx) => (
                 <button
@@ -167,69 +140,16 @@ export default function Home() {
           ))}
         </section>
 
-        {/* 3. KATALOG PRODUK */}
-        <section id="katalog" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900">Produk Populer</h2>
-              <p className="text-xs text-slate-500">Pilihan favorit minggu ini</p>
-            </div>
-            <span className="text-xs text-red-600 hover:underline cursor-pointer font-semibold">Lihat Semua →</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch">
-            {PRODUCTS.map((product) => (
-              <div
-                key={product.id}
-                onClick={() => handleOpenModal(product)}
-                className="group bg-white border border-slate-200/80 rounded-3xl p-5 flex flex-col justify-between h-full transition-all duration-300 hover:scale-[1.02] hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/60 cursor-pointer"
-              >
-                {/* Konten Atas */}
-                <div className="flex flex-col">
-                  {/* Gambar dengan sudut melengkung/rounded */}
-                  <div className="relative w-full h-48 mb-4 rounded-2xl overflow-hidden bg-slate-100 flex items-center justify-center">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-
-                  {/* Judul Produk */}
-                  <h3 className="text-base font-semibold text-slate-900 line-clamp-1 mb-1 min-h-[1.5rem] group-hover:text-red-600 transition">
-                    {product.name}
-                  </h3>
-
-                  {/* Deskripsi Produk - Dibuat fixed height (h-9 / 2 baris) */}
-                  <p className="text-xs text-slate-500 line-clamp-2 h-9 mb-4 leading-relaxed">
-                    {product.description}
-                  </p>
-                </div>
-
-                {/* Konten Bawah (Harga & Button) - Menggunakan mt-auto agar selalu sejajar di bawah */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Harga</span>
-                    <span className="text-sm font-bold text-slate-900">
-                      Rp {product.price?.toLocaleString('id-ID')}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenModal(product);
-                    }}
-                    className="bg-red-600 hover:bg-red-500 text-white font-medium px-4 py-2 rounded-full text-xs transition-all duration-200 active:scale-95 shadow-md shadow-red-500/20"
-                  >
-                    + Beli
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      
+        {/* 3. KATALOG PRODUK (HANYA MEMANGGIL KOMPONEN INI) */}
+        {/* Jika di Home kamu HANYA mau tampilkan card tanpa Search Bar, set showSearch={false} dan showCategories={false} */}
+        <Catalog 
+          title="Produk Populer" 
+          subtitle="Pilihan favorit minggu ini" 
+          limit={4} 
+          showSeeAll={true} 
+          showSearch={false}
+          showCategories={false}
+        />
 
         {/* 4. VALUE PROPOSITION BAR */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white border border-slate-200/80 rounded-3xl p-6 text-center shadow-sm">
@@ -247,11 +167,6 @@ export default function Home() {
         </section>
 
       </main>
-      <ProductModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
     </div>
   );
 }
